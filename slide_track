@@ -1,0 +1,71 @@
+加速和减速：人类在操作鼠标时通常会有一个加速和减速的过程，因此模拟的滑动轨迹应该包含这些阶段。开始时慢慢加速，然后再慢慢减速到目标位置。
+
+自然曲线：拟人的滑动轨迹通常是流畅的曲线而非直线。通过使用曲线来模拟人类的手部运动，可以使滑动轨迹看起来更加自然。
+
+随机性：人类的鼠标操作往往有一些微小的不规则性，例如微小的抖动或偏离轨迹。为了更真实地模拟拟人滑动轨迹，可以在滑动过程中添加一些随机性，如微小的抖动或偏移。
+
+时间间隔：模拟人类操作时，滑动过程的时间间隔不应过于均匀。可以在滑动的不同阶段使用不同的时间间隔，以模拟人类的操作习惯。
+
+速度控制：滑动轨迹的速度也需要合理控制，过快或过慢的滑动都可能被识别为非人类操作。可以根据实际情况调整滑动速度，以确保模拟的滑动轨迹与真实人类操作相似。
+
+import pyautogui
+import random
+import math
+import time
+
+def generate_human-like_trajectory(start_x, start_y, target_x, target_y, total_duration):
+    acceleration_duration = total_duration * 0.3
+    deceleration_duration = total_duration * 0.2
+    constant_speed_duration = total_duration - acceleration_duration - deceleration_duration
+
+    acceleration_distance = math.hypot(target_x - start_x, target_y - start_y) * 0.3
+    deceleration_distance = math.hypot(target_x - start_x, target_y - start_y) * 0.2
+    constant_speed_distance = math.hypot(target_x - start_x, target_y - start_y) - acceleration_distance - deceleration_distance
+
+    def ease_out_quad(t):
+        return 1 - (1 - t) * (1 - t)
+
+    def ease_in_quad(t):
+        return t * t
+
+    def generate_segment_trajectory(segment_duration, segment_distance):
+        trajectory = []
+        segment_steps = int(segment_duration * 100)
+        for i in range(segment_steps):
+            t = i / segment_steps
+            fraction = ease_out_quad(t) if segment_duration == deceleration_duration else ease_in_quad(t)
+            offset = fraction * segment_distance
+            angle = math.atan2(target_y - start_y, target_x - start_x)
+            x = start_x + math.cos(angle) * offset
+            y = start_y + math.sin(angle) * offset
+            trajectory.append((int(x), int(y)))
+        return trajectory
+
+    def add_random_jitter(position):
+        x_offset = random.randint(-5, 5)
+        y_offset = random.randint(-5, 5)
+        return position[0] + x_offset, position[1] + y_offset
+
+    acceleration_trajectory = generate_segment_trajectory(acceleration_duration, acceleration_distance)
+    constant_speed_trajectory = generate_segment_trajectory(constant_speed_duration, constant_speed_distance)
+    deceleration_trajectory = generate_segment_trajectory(deceleration_duration, deceleration_distance)
+
+    trajectory = acceleration_trajectory + constant_speed_trajectory + deceleration_trajectory
+    trajectory = [add_random_jitter(position) for position in trajectory]
+
+    # 生成自然曲线轨迹
+    curve_trajectory = []
+    for i in range(len(trajectory)):
+        curve_fraction = i / len(trajectory)
+        x_offset = random.randint(-10, 10)
+        y_offset = int(math.sin(curve_fraction * math.pi) * 10)
+        x = trajectory[i][0] + x_offset
+        y = trajectory[i][1] + y_offset
+        curve_trajectory.append((x, y))
+
+    return curve_trajectory
+
+
+# 示例用法
+start_x = 500
+start_y = 
